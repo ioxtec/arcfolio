@@ -1,0 +1,16 @@
+.git
+.github
+.angular
+**/.angular
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+**/coverage
+.env
+.env.*
+!.env.example
+design-qa.md
+*.log
+.DS_Store
