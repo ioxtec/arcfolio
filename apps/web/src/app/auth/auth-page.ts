@@ -4,11 +4,12 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { BRAND_CONFIG } from '../core/config/brand.config';
+import { ThemeToggle } from '../core/theme/theme-toggle';
 import { AuthApiService } from './auth-api.service';
 
 @Component({
   selector: 'app-auth-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ThemeToggle],
   templateUrl: './auth-page.html',
   styleUrl: './auth-page.scss',
 })

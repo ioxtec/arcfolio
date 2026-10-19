@@ -5,6 +5,8 @@
   text-rendering: optimizeLegibility;
 }
 
+:root[data-theme='dark'] { color-scheme: dark; }
+
 html,
 body {
   min-width: 320px;
