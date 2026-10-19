@@ -16,11 +16,30 @@ The repository uses neutral technical names so the product can be renamed withou
 2. Copy `.env.example` to `.env` and `apps/api/.env`.
 3. Run `npm install`.
 4. Run `docker compose up -d`.
-5. Run `npm run db:migrate -- --name init`.
+5. Run `npm run db:migrate`.
 6. Run `npm run dev`.
 
 Web: `http://localhost:4200`  
 API health check: `http://localhost:3000/api/health`
+
+## Authentication
+
+Email/password authentication works after the PostgreSQL migration is applied. Sessions use an HTTP-only cookie.
+
+To enable Google sign-in, create a Google OAuth 2.0 web client and set these values in `apps/api/.env`:
+
+```dotenv
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+```
+
+For local development, add this authorized redirect URI to the Google client:
+
+```text
+http://localhost:3000/api/auth/google/callback
+```
+
+`AUTH_JWT_SECRET` must be replaced with a long random value outside local development.
 
 ## Renaming the product
 
