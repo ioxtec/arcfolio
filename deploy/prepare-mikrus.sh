@@ -24,9 +24,15 @@ fi
 
 docker network inspect arcfolio_backend >/dev/null 2>&1 \
   || docker network create arcfolio_backend >/dev/null
+docker network inspect caddy_default >/dev/null 2>&1 \
+  || docker network create caddy_default >/dev/null
 
 if ! docker inspect postgres --format '{{json .NetworkSettings.Networks}}' | grep -q 'arcfolio_backend'; then
   docker network connect arcfolio_backend postgres
+fi
+
+if ! docker inspect caddy --format '{{json .NetworkSettings.Networks}}' | grep -q 'caddy_default'; then
+  docker network connect caddy_default caddy
 fi
 
 if [ ! -f "${app_dir}/app.env" ]; then
