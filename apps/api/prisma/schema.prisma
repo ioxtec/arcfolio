@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  resumes      Resume[]
+
+  @@map("users")
+}
+
+model Resume {
+  id            String       @id @default(uuid()) @db.Uuid
+  userId        String       @map("user_id") @db.Uuid
+  title         String
+  language      String       @default("pl")
+  personalData  Json         @default("{}") @map("personal_data")
+  summary       String?
+  templateId    String       @default("classic") @map("template_id")
+  themeSettings Json         @default("{}") @map("theme_settings")
+  sectionOrder  Json         @default("[]") @map("section_order")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiences   Experience[]
+  educations    Education[]
+  skills        Skill[]
+
+  @@index([userId])
+  @@map("resumes")
+}
+
+model Experience {
+  id          String    @id @default(uuid()) @db.Uuid
+  resumeId    String    @map("resume_id") @db.Uuid
+  company     String
+  position    String
+  location    String?
+  startDate   DateTime? @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  isCurrent   Boolean   @default(false) @map("is_current")
+  description Json      @default("[]")
+  sortOrder   Int       @default(0) @map("sort_order")
+  resume      Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, sortOrder])
+  @@map("experiences")
+}
+
+model Education {
+  id          String    @id @default(uuid()) @db.Uuid
+  resumeId    String    @map("resume_id") @db.Uuid
+  institution String
+  field       String?
+  degree      String?
+  startDate   DateTime? @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  description String?
+  sortOrder   Int       @default(0) @map("sort_order")
+  resume      Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, sortOrder])
+  @@map("educations")
+}
+
+model Skill {
+  id        String @id @default(uuid()) @db.Uuid
+  resumeId  String @map("resume_id") @db.Uuid
+  name      String
+  level     String?
+  sortOrder Int    @default(0) @map("sort_order")
+  resume    Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, sortOrder])
+  @@map("skills")
+}
