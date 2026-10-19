@@ -1,0 +1,104 @@
+@if (loading()) {
+  <div class="loading">Ładowanie dokumentu…</div>
+} @else if (resume(); as document) {
+  <section class="history-page">
+    <a class="back" routerLink="/workspace"><span aria-hidden="true">‹</span> Moje CV</a>
+    <header class="history-header">
+      <div>
+        <h1>{{ document.title }}</h1>
+        <div class="document-state">
+          @for (item of document.localizations; track item.locale) {
+            <span class="locale" [class.active]="item.locale === activeLocale()">{{ localeCode(item.locale) }}</span>
+          }
+          <span class="state-item"><svg viewBox="0 0 24 24"><path d="M6 2.8h8l4 4V21H6zM14 3v4h4"/></svg>Wersja obecna</span>
+          <b>•</b>
+          <span class="state-item"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.6-1.7A5 5 0 0 0 7 18z"/></svg>Zapisano przed chwilą</span>
+        </div>
+      </div>
+      <button type="button" class="primary-button" [disabled]="revisions().length >= limit" (click)="showSave.set(true)">
+        <svg viewBox="0 0 24 24"><path d="M6 2.8h8l4 4V21H6zM14 3v4h4M12 11v6M9 14h6"/></svg>Zapisz jako wersję
+      </button>
+    </header>
+
+    <div class="divider"></div>
+    @if (error()) { <p class="error-message" role="alert">{{ error() }}</p> }
+
+    <div class="history-layout">
+      <section class="current-panel">
+        <header><h2>Wersja obecna</h2><button type="button" class="edit-button">Edytuj</button></header>
+        <div class="cv-preview">
+          <div class="cv-heading"><strong>Anna<br />Kowalska</strong><span>{{ document.localizations[0]?.roleTitle || document.title }}</span></div>
+          <div class="preview-rule"></div>
+          <h3>{{ document.localizations[0]?.sectionLabels?.['summary'] || 'Podsumowanie' }}</h3>
+          <i class="text-line wide"></i><i class="text-line"></i><i class="text-line short"></i>
+          <div class="preview-columns">
+            <div><h3>{{ document.localizations[0]?.sectionLabels?.['experience'] || 'Doświadczenie' }}</h3><i></i><i></i><i></i><i></i><i></i></div>
+            <div><h3>{{ document.localizations[0]?.sectionLabels?.['skills'] || 'Umiejętności' }}</h3><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="versions-panel">
+        <h2>Historia wersji</h2>
+        @if (revisions().length === 0) {
+          <div class="empty-history">
+            <h3>Nie masz jeszcze zapisanych wersji</h3>
+            <p>Wersja obecna zapisuje się automatycznie. Gdy osiągniesz ważny etap, zachowaj go w historii.</p>
+            <button type="button" class="primary-button" (click)="showSave.set(true)">Zapisz pierwszą wersję</button>
+          </div>
+        } @else {
+          <div class="version-list">
+            @for (version of revisions(); track version.id) {
+              <article class="version-row" [class.selected]="selected()?.id === version.id">
+                <button class="version-summary" type="button" (click)="selected.set(selected()?.id === version.id ? null : version)">
+                  <svg viewBox="0 0 24 24"><path d="M6 2.8h8l4 4V21H6zM14 3v4h4"/></svg>
+                  <strong>Wersja {{ version.revisionNumber }}</strong>
+                  <span class="version-name">{{ version.name }}</span>
+                  <span class="date"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{ formattedDate(version.createdAt) }}</span>
+                  <span class="preview-action"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg>Podgląd</span>
+                  <span class="chevron">{{ selected()?.id === version.id ? '⌃' : '•••' }}</span>
+                </button>
+                @if (selected()?.id === version.id) {
+                  <div class="version-detail">
+                    <div><strong>Ta wersja pozostanie niezmieniona.</strong><p>Możesz użyć jej jako wersji obecnej. Obecna wersja robocza zostanie zastąpiona kopią tej wersji.</p></div>
+                    <button type="button" class="primary-button" (click)="showRestore.set(true)">Użyj jako wersji obecnej</button>
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        }
+        <footer class="history-usage">
+          <span>{{ revisions().length }} z {{ limit }} zapisanych wersji</span>
+          <div><i [style.width.%]="revisions().length / limit * 100"></i></div>
+        </footer>
+      </section>
+    </div>
+  </section>
+}
+
+@if (showSave()) {
+  <div class="modal-backdrop" (click)="showSave.set(false)">
+    <section class="modal save-modal" role="dialog" aria-modal="true" aria-labelledby="save-version-title" (click)="$event.stopPropagation()">
+      <button class="modal-close" type="button" (click)="showSave.set(false)" aria-label="Zamknij">×</button>
+      <h2 id="save-version-title">Zapisz jako nową wersję</h2>
+      <p>Powstanie niezmienny snapshot całego dokumentu. Wersję obecną możesz dalej edytować.</p>
+      <label>Nazwa wersji — opcjonalnie<input [(ngModel)]="versionName" placeholder="np. CV dla Acme" /></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" (click)="showSave.set(false)">Anuluj</button><button type="button" class="primary-button" [disabled]="busy()" (click)="saveVersion()">{{ busy() ? 'Zapisywanie…' : 'Zapisz wersję' }}</button></div>
+    </section>
+  </div>
+}
+
+@if (showRestore() && selected(); as version) {
+  <div class="modal-backdrop restore-backdrop" (click)="showRestore.set(false)">
+    <section class="modal restore-modal" role="alertdialog" aria-modal="true" aria-labelledby="restore-version-title" (click)="$event.stopPropagation()">
+      <div class="warning" aria-hidden="true">!</div>
+      <div>
+        <button class="modal-close" type="button" (click)="showRestore.set(false)" aria-label="Zamknij">×</button>
+        <h2 id="restore-version-title">Użyć wersji {{ version.revisionNumber }} jako obecnej?</h2>
+        <p>Obecna wersja robocza zostanie zastąpiona kopią tej wersji. Wersja {{ version.revisionNumber }} pozostanie bez zmian.</p>
+        <div class="modal-actions"><button type="button" class="secondary-button" (click)="showRestore.set(false)">Anuluj</button><button type="button" class="primary-button" [disabled]="busy()" (click)="confirmRestore()">{{ busy() ? 'Przywracanie…' : 'Użyj wersji' }}</button></div>
+      </div>
+    </section>
+  </div>
+}

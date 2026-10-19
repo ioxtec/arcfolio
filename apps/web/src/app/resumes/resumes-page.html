@@ -1,0 +1,92 @@
+<section class="documents-page">
+  <header class="page-header">
+    <div>
+      <h1>Moje CV</h1>
+      <p>Twórz, tłumacz i rozwijaj swoje dokumenty.</p>
+    </div>
+    <button type="button" class="primary-button" (click)="showCreate.set(true)">
+      <span aria-hidden="true">＋</span> Nowe CV
+    </button>
+  </header>
+
+  <div class="divider"></div>
+
+  @if (loading()) {
+    <div class="loading-state"><span></span><span></span><span></span></div>
+  } @else if (resumes().length === 0) {
+    <div class="empty-state">
+      <div class="empty-sheet" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <h2>Twoje pierwsze CV zaczyna się tutaj</h2>
+      <p>Utwórz dokument, wybierz język i uzupełniaj go krok po kroku.</p>
+      <button type="button" class="primary-button" (click)="showCreate.set(true)">Utwórz pierwsze CV</button>
+    </div>
+  } @else {
+    <div class="document-list">
+      @for (resume of resumes(); track resume.id; let index = $index) {
+        <article class="document-row" [class.featured]="index === 1">
+          <div class="paper-preview" aria-hidden="true">
+            <strong>{{ resume.title.split(' ')[0] }}</strong>
+            <i class="line wide"></i><i class="line"></i><i class="line short"></i>
+            <span class="columns"><i></i><i></i></span>
+          </div>
+          <div class="document-info">
+            <h2>{{ resume.title }}</h2>
+            <div class="languages">
+              @for (locale of resume.locales; track locale) {
+                <span>{{ localeCode(locale) }}</span>
+              }
+            </div>
+            <div class="metadata">
+              <span><svg viewBox="0 0 24 24"><path d="M6 2.8h8l4 4V21H6zM14 3v4h4"/></svg>Wersja obecna</span>
+              <b>•</b>
+              <span><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.6-1.7A5 5 0 0 0 7 18z"/></svg>Zapisano {{ savedAgo(resume.updatedAt) }}</span>
+              <b>•</b>
+              <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{ resume.revisionCount }}/{{ limits().versions }} wersji</span>
+            </div>
+            <p class="template">Szablon: {{ templateName(resume.templateId) }}</p>
+          </div>
+          <div class="actions">
+            <a class="edit-button" [routerLink]="['/workspace/resumes', resume.id]">
+              <svg viewBox="0 0 24 24"><path d="m4 20 4.5-1 10-10-3.5-3.5-10 10zM13.8 6.7l3.5 3.5"/></svg>Edytuj
+            </a>
+            <a class="secondary-button" [routerLink]="['/workspace/resumes', resume.id]">
+              <svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg>Podgląd
+            </a>
+            <button class="more-button" type="button" aria-label="Więcej opcji">•••</button>
+          </div>
+        </article>
+      }
+    </div>
+
+    <footer class="usage">
+      <span>Użycie w planie darmowym</span>
+      <strong>{{ resumes().length }} z {{ limits().documents }} CV</strong>
+      <div class="progress"><i [style.width.%]="resumes().length / limits().documents * 100"></i></div>
+    </footer>
+  }
+
+  @if (error()) { <p class="error-message" role="alert">{{ error() }}</p> }
+</section>
+
+@if (showCreate()) {
+  <div class="modal-backdrop" (click)="showCreate.set(false)">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="create-title" (click)="$event.stopPropagation()">
+      <button class="modal-close" type="button" (click)="showCreate.set(false)" aria-label="Zamknij">×</button>
+      <h2 id="create-title">Nowe CV</h2>
+      <p>Zacznij od nazwy dokumentu i pierwszej wersji językowej.</p>
+      <label>Nazwa CV<input [(ngModel)]="title" placeholder="np. Senior Angular Developer" autofocus /></label>
+      <label>Stanowisko<input [(ngModel)]="roleTitle" placeholder="np. Frontend Developer" /></label>
+      <label>Język
+        <select [(ngModel)]="locale">
+          @for (item of locales; track item[0]) { <option [value]="item[0]">{{ item[1] }}</option> }
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="secondary-button" (click)="showCreate.set(false)">Anuluj</button>
+        <button type="button" class="primary-button" [disabled]="title.trim().length < 2 || creating()" (click)="create()">
+          {{ creating() ? 'Tworzenie…' : 'Utwórz CV' }}
+        </button>
+      </div>
+    </section>
+  </div>
+}
