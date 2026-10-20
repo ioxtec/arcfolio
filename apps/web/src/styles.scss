@@ -15,13 +15,15 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
-  outline: 3px solid rgba(49, 87, 220, 0.28);
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(125, 145, 245, 0.35);
   outline-offset: 3px;
 }

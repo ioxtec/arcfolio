@@ -36,24 +36,60 @@ model AuthIdentity {
 }
 
 model Resume {
-  id            String       @id @default(uuid()) @db.Uuid
-  userId        String       @map("user_id") @db.Uuid
-  title         String
-  language      String       @default("pl")
-  personalData  Json         @default("{}") @map("personal_data")
-  summary       String?
-  templateId    String       @default("classic") @map("template_id")
-  themeSettings Json         @default("{}") @map("theme_settings")
-  sectionOrder  Json         @default("[]") @map("section_order")
-  createdAt     DateTime     @default(now()) @map("created_at")
-  updatedAt     DateTime     @updatedAt @map("updated_at")
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  experiences   Experience[]
-  educations    Education[]
-  skills        Skill[]
+  id              String             @id @default(uuid()) @db.Uuid
+  userId          String             @map("user_id") @db.Uuid
+  title           String
+  language        String             @default("pl")
+  personalData    Json               @default("{}") @map("personal_data")
+  summary         String?
+  templateId      String             @default("classic") @map("template_id")
+  themeSettings   Json               @default("{}") @map("theme_settings")
+  sectionOrder    Json               @default("[]") @map("section_order")
+  revisionSequence Int               @default(0) @map("revision_sequence")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiences     Experience[]
+  educations      Education[]
+  skills          Skill[]
+  localizations   ResumeLocalization[]
+  revisions       ResumeRevision[]
 
   @@index([userId])
   @@map("resumes")
+}
+
+model ResumeLocalization {
+  id            String   @id @default(uuid()) @db.Uuid
+  resumeId      String   @map("resume_id") @db.Uuid
+  locale        String
+  roleTitle     String?  @map("role_title")
+  summary       String?
+  sectionLabels Json     @default("{}") @map("section_labels")
+  consentText   String?  @map("consent_text")
+  content       Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  resume        Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@unique([resumeId, locale])
+  @@index([resumeId])
+  @@map("resume_localizations")
+}
+
+model ResumeRevision {
+  id             String   @id @default(uuid()) @db.Uuid
+  resumeId       String   @map("resume_id") @db.Uuid
+  revisionNumber Int      @map("revision_number")
+  name           String?
+  reason         String   @default("manual")
+  snapshot       Json
+  createdAt      DateTime @default(now()) @map("created_at")
+  resume         Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@unique([resumeId, revisionNumber])
+  @@index([resumeId, createdAt])
+  @@map("resume_revisions")
 }
 
 model Experience {
