@@ -1,0 +1,40 @@
+services:
+  api:
+    image: "${API_IMAGE:-arcfolio-dev-api}:${IMAGE_TAG:-local}"
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: arcfolio-dev-api
+    restart: unless-stopped
+    env_file:
+      - ./app.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    expose:
+      - "3000"
+    networks:
+      - backend
+
+  web:
+    image: "${WEB_IMAGE:-arcfolio-dev-web}:${IMAGE_TAG:-local}"
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: arcfolio-dev-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    expose:
+      - "80"
+    networks:
+      - backend
+      - caddy
+
+networks:
+  backend:
+    name: arcfolio_dev_backend
+    external: true
+  caddy:
+    name: caddy_default
+    external: true
