@@ -59,6 +59,7 @@ export class ResumeApiService {
     input: {
       title?: string;
       locale: string;
+      templateId?: 'classic' | 'modern' | 'sidebar';
       roleTitle?: string;
       summary?: string;
       consentText?: string;

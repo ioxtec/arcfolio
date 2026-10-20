@@ -16,6 +16,10 @@
         </div>
       </div>
       <div class="header-actions">
+        <button type="button" class="secondary-button preview-button" (click)="showPreview.set(true)">
+          <svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/></svg>
+          Podgląd i PDF
+        </button>
         <button type="button" class="secondary-button header-edit" (click)="showEditor.set(true)">Edytuj CV</button>
         <button type="button" class="primary-button" [disabled]="revisions().length >= limit" (click)="showSave.set(true)">
           <svg viewBox="0 0 24 24"><path d="M6 2.8h8l4 4V21H6zM14 3v4h4M12 11v6M9 14h6"/></svg>Zapisz jako wersję
@@ -28,17 +32,10 @@
 
     <div class="history-layout">
       <section class="current-panel">
-        <header><h2>Wersja obecna</h2><button type="button" class="edit-button" (click)="showEditor.set(true)">Edytuj</button></header>
-        <div class="cv-preview">
-          <div class="cv-heading"><strong>Anna<br />Kowalska</strong><span>{{ document.localizations[0]?.roleTitle || document.title }}</span></div>
-          <div class="preview-rule"></div>
-          <h3>{{ document.localizations[0]?.sectionLabels?.['summary'] || 'Podsumowanie' }}</h3>
-          <i class="text-line wide"></i><i class="text-line"></i><i class="text-line short"></i>
-          <div class="preview-columns">
-            <div><h3>{{ document.localizations[0]?.sectionLabels?.['experience'] || 'Doświadczenie' }}</h3><i></i><i></i><i></i><i></i><i></i></div>
-            <div><h3>{{ document.localizations[0]?.sectionLabels?.['skills'] || 'Umiejętności' }}</h3><i></i><i></i><i></i><i></i></div>
-          </div>
-        </div>
+        <header><div><h2>Wersja obecna</h2><span>{{ document.templateId === 'classic' ? 'Klasyczny' : document.templateId === 'sidebar' ? 'Kolumnowy' : 'Nowoczesny' }}</span></div><button type="button" class="edit-button" (click)="showPreview.set(true)">Otwórz podgląd</button></header>
+        <button type="button" class="document-preview-button" (click)="showPreview.set(true)" aria-label="Otwórz podgląd CV i wybór szablonu">
+          <app-resume-document-preview [resume]="document" />
+        </button>
       </section>
 
       <section class="versions-panel">
@@ -78,6 +75,14 @@
       </section>
     </div>
   </section>
+}
+
+@if (showPreview() && resume(); as document) {
+  <app-resume-preview-modal
+    [resume]="document"
+    (saved)="applySavedResume($event)"
+    (closed)="showPreview.set(false)"
+  />
 }
 
 @if (showEditor() && resume(); as document) {

@@ -4,10 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ResumeApiService, ResumeDetails, ResumeRevision } from './resume-api.service';
 import { ResumeEditorModal } from './resume-editor-modal';
+import { ResumeDocumentPreview } from './resume-document-preview';
+import { ResumePreviewModal } from './resume-preview-modal';
 
 @Component({
   selector: 'app-resume-history-page',
-  imports: [FormsModule, RouterLink, ResumeEditorModal],
+  imports: [FormsModule, RouterLink, ResumeEditorModal, ResumeDocumentPreview, ResumePreviewModal],
   templateUrl: './resume-history-page.html',
   styleUrl: './resume-history-page.scss',
 })
@@ -23,6 +25,7 @@ export class ResumeHistoryPage {
   protected readonly showSave = signal(false);
   protected readonly showRestore = signal(false);
   protected readonly showEditor = signal(false);
+  protected readonly showPreview = signal(false);
   protected limit = 10;
   protected versionName = '';
   private readonly id = this.route.snapshot.paramMap.get('id') ?? '';

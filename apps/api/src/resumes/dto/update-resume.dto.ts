@@ -41,6 +41,11 @@ export class UpdateResumeDto {
   @MaxLength(100)
   title?: string;
 
+  @IsOptional()
+  @IsString()
+  @IsIn(['classic', 'modern', 'sidebar'])
+  templateId?: 'classic' | 'modern' | 'sidebar';
+
   @IsString()
   @IsIn(SUPPORTED_LOCALES)
   locale!: (typeof SUPPORTED_LOCALES)[number];

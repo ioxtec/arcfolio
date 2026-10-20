@@ -166,6 +166,7 @@ export class ResumesService {
       where: { id },
       data: {
         ...(input.title !== undefined ? { title: input.title.trim() } : {}),
+        ...(input.templateId !== undefined ? { templateId: input.templateId } : {}),
         language: input.locale,
         ...(input.personalData !== undefined
           ? { personalData: input.personalData as Prisma.InputJsonValue }
