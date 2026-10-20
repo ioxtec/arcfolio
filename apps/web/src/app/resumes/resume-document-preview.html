@@ -1,0 +1,49 @@
+<article class="resume-sheet" [class]="'template-' + templateId()" [class.compact]="compact()">
+  @if (templateId() === 'sidebar') {
+    <aside class="resume-sidebar">
+      <div class="avatar">{{ model().initials }}</div>
+      @if (contact().length) {
+        <section><h3>Kontakt</h3>@for (item of contact(); track item) { <p>{{ item }}</p> }</section>
+      }
+      @if (model().skills) { <section><h3>{{ label('skills', 'Umiejętności') }}</h3><div class="rich-text" [innerHTML]="model().skills"></div></section> }
+      @if (model().languages) { <section><h3>{{ label('languages', 'Języki') }}</h3><div class="rich-text" [innerHTML]="model().languages"></div></section> }
+      @if (model().interests) { <section><h3>{{ label('interests', 'Zainteresowania') }}</h3><div class="rich-text" [innerHTML]="model().interests"></div></section> }
+    </aside>
+  }
+
+  <div class="resume-main">
+    <header class="resume-heading">
+      @if (templateId() === 'classic') { <div class="avatar">{{ model().initials }}</div> }
+      <div class="identity"><h1>{{ model().fullName }}</h1><p>{{ model().roleTitle }}</p></div>
+      @if (templateId() === 'modern') {
+        <div class="modern-contact">@for (item of contact(); track item) { <span>{{ item }}</span> }</div>
+      }
+    </header>
+
+    @if (templateId() === 'classic' && contact().length) {
+      <div class="classic-contact">@for (item of contact(); track item) { <span>{{ item }}</span> }</div>
+    }
+
+    <div class="resume-content" [class.two-column]="templateId() === 'modern'">
+      <div class="primary-column">
+        @if (model().summary) { <section><h2>{{ label('summary', 'Podsumowanie') }}</h2><div class="rich-text" [innerHTML]="model().summary"></div></section> }
+        @if (model().experience) { <section><h2>{{ label('experience', 'Doświadczenie zawodowe') }}</h2><div class="rich-text" [innerHTML]="model().experience"></div></section> }
+        @if (model().education) { <section><h2>{{ label('education', 'Wykształcenie') }}</h2><div class="rich-text" [innerHTML]="model().education"></div></section> }
+      </div>
+      @if (templateId() === 'modern') {
+        <aside class="secondary-column">
+          @if (model().skills) { <section><h2>{{ label('skills', 'Umiejętności') }}</h2><div class="rich-text" [innerHTML]="model().skills"></div></section> }
+          @if (model().languages) { <section><h2>{{ label('languages', 'Języki') }}</h2><div class="rich-text" [innerHTML]="model().languages"></div></section> }
+          @if (model().interests) { <section><h2>{{ label('interests', 'Zainteresowania') }}</h2><div class="rich-text" [innerHTML]="model().interests"></div></section> }
+        </aside>
+      } @else if (templateId() === 'classic') {
+        <div class="classic-extras">
+          @if (model().skills) { <section><h2>{{ label('skills', 'Umiejętności') }}</h2><div class="rich-text" [innerHTML]="model().skills"></div></section> }
+          @if (model().languages) { <section><h2>{{ label('languages', 'Języki') }}</h2><div class="rich-text" [innerHTML]="model().languages"></div></section> }
+          @if (model().interests) { <section><h2>{{ label('interests', 'Zainteresowania') }}</h2><div class="rich-text" [innerHTML]="model().interests"></div></section> }
+        </div>
+      }
+    </div>
+    @if (model().consent) { <footer class="consent" [innerHTML]="model().consent"></footer> }
+  </div>
+</article>

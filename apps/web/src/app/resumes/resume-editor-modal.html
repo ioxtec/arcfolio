@@ -1,0 +1,107 @@
+<div class="editor-backdrop" (click)="requestClose()">
+  <section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="editor-title" (click)="$event.stopPropagation()">
+    <header class="editor-header">
+      <div class="editor-heading">
+        <h2 id="editor-title">Edytuj CV</h2>
+        <p>{{ title }} <span>·</span> {{ localeLabel() }}</p>
+      </div>
+      <div class="save-state" [class.error]="saveState() === 'error'">
+        <i aria-hidden="true"></i>
+        <div><strong>{{ saveLabel() }}</strong><span>Wersja obecna zapisuje się automatycznie</span></div>
+      </div>
+      <button class="save-button" type="button" [disabled]="saveState() === 'saving'" (click)="saveNow()">Zapisz zmiany</button>
+      <button class="close-button" type="button" aria-label="Zamknij edytor" (click)="requestClose()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </header>
+
+    <div class="editor-layout">
+      <aside class="section-rail" aria-label="Sekcje CV">
+        <div class="rail-heading"><strong>Sekcje CV</strong><span>{{ activeIndex() + 1 }} z {{ sections.length }}</span></div>
+        <div class="progress"><i [style.width.%]="(activeIndex() + 1) / sections.length * 100"></i></div>
+        <nav>
+          @for (section of sections; track section.id; let index = $index) {
+            <button type="button" [class.active]="activeSection() === section.id" (click)="selectSection(section.id)">
+              <span class="section-number">{{ index + 1 }}</span>
+              <span>{{ section.label }}</span>
+            </button>
+          }
+        </nav>
+      </aside>
+
+      <main class="editor-content">
+        <div class="mobile-steps">
+          <button type="button" [disabled]="activeIndex() === 0" (click)="previousSection()" aria-label="Poprzednia sekcja">‹</button>
+          <strong>{{ activeIndex() + 1 }}. {{ sectionTitle() }}</strong>
+          <button type="button" [disabled]="activeIndex() === sections.length - 1" (click)="nextSection()" aria-label="Następna sekcja">›</button>
+        </div>
+
+        @if (activeSection() === 'basics') {
+          <div class="content-title language-title">
+            <div><h3>Dane podstawowe</h3><p>{{ sectionDescription() }}</p></div>
+            <label>Język CV
+              <select [(ngModel)]="locale" (ngModelChange)="queueSave()">
+                @for (item of locales; track item[0]) { <option [value]="item[0]">{{ item[1] }}</option> }
+              </select>
+            </label>
+          </div>
+          <div class="photo-row">
+            <div class="photo-placeholder" aria-label="Zdjęcie profilowe">{{ initials() }}</div>
+            <div><strong>Zdjęcie</strong><p>Dodawanie zdjęć przygotujemy w kolejnym kroku.</p><button type="button" disabled>Zmień zdjęcie</button></div>
+          </div>
+          <div class="form-grid">
+            <label>Imię<input [(ngModel)]="personalData.firstName" (ngModelChange)="queueSave()" autocomplete="given-name" /></label>
+            <label>Nazwisko<input [(ngModel)]="personalData.lastName" (ngModelChange)="queueSave()" autocomplete="family-name" /></label>
+            <label class="wide">Stanowisko<input [(ngModel)]="roleTitle" (ngModelChange)="queueSave()" /></label>
+            <label>E-mail<input type="email" [(ngModel)]="personalData.email" (ngModelChange)="queueSave()" autocomplete="email" /></label>
+            <label>Telefon<input [(ngModel)]="personalData.phone" (ngModelChange)="queueSave()" autocomplete="tel" /></label>
+            <label class="wide">Miasto<input [(ngModel)]="personalData.city" (ngModelChange)="queueSave()" autocomplete="address-level2" /></label>
+          </div>
+        } @else {
+          <div class="content-title">
+            <div><h3>{{ sectionTitle() }}</h3><p>{{ sectionDescription() }}</p></div>
+          </div>
+          <div class="rich-editor">
+            <div class="editor-toolbar" aria-label="Formatowanie tekstu">
+              <button type="button" title="Pogrubienie" (mousedown)="$event.preventDefault()" (click)="format('bold')"><b>B</b></button>
+              <button type="button" title="Kursywa" (mousedown)="$event.preventDefault()" (click)="format('italic')"><i>I</i></button>
+              <span></span>
+              <button type="button" title="Lista punktowana" (mousedown)="$event.preventDefault()" (click)="format('insertUnorderedList')">
+                <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+              </button>
+              <button type="button" title="Lista numerowana" (mousedown)="$event.preventDefault()" (click)="format('insertOrderedList')">
+                <svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M4 5h2v3M4 11h2l-2 3h2M4 17h2v3H4"/></svg>
+              </button>
+              <span></span>
+              <button type="button" title="Cofnij" (mousedown)="$event.preventDefault()" (click)="format('undo')">
+                <svg viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M5 12h8a6 6 0 0 1 6 6"/></svg>
+              </button>
+              <button type="button" title="Ponów" (mousedown)="$event.preventDefault()" (click)="format('redo')">
+                <svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5M19 12h-8a6 6 0 0 0-6 6"/></svg>
+              </button>
+            </div>
+            <div
+              class="editor-area"
+              data-rich-editor
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="true"
+              [attr.data-placeholder]="'Zacznij pisać…'"
+              [innerHTML]="editorValue()"
+              (input)="updateEditor($event)"
+            ></div>
+          </div>
+          <div class="editor-meta"><span>Tekst zapisuje się automatycznie.</span><span>{{ editorValue().length }} znaków</span></div>
+        }
+      </main>
+    </div>
+
+    <footer class="editor-footer">
+      <button class="secondary-action" type="button" (click)="activeIndex() === 0 ? requestClose() : previousSection()">{{ activeIndex() === 0 ? 'Anuluj' : 'Wstecz' }}</button>
+      <button class="primary-action" type="button" (click)="activeIndex() === sections.length - 1 ? requestClose() : nextSection()">
+        {{ nextLabel() }}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+      </button>
+    </footer>
+  </section>
+</div>

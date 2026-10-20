@@ -1,0 +1,33 @@
+<div class="preview-backdrop" (click)="closed.emit()">
+  <section class="preview-modal" role="dialog" aria-modal="true" aria-labelledby="preview-title" (click)="$event.stopPropagation()">
+    <header class="preview-header">
+      <div><h2 id="preview-title">Podgląd CV</h2><p>Wybierz układ. Treść dokumentu pozostanie bez zmian.</p></div>
+      <div class="header-actions">
+        <button type="button" class="secondary-button" [disabled]="downloading()" (click)="download()">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+          {{ downloading() ? 'Generowanie…' : 'Pobierz PDF' }}
+        </button>
+        <button type="button" class="primary-button" [disabled]="saving() || selected() === resume().templateId" (click)="saveTemplate()">
+          {{ saving() ? 'Zapisywanie…' : 'Użyj szablonu' }}
+        </button>
+        <button type="button" class="close-button" (click)="closed.emit()" aria-label="Zamknij">×</button>
+      </div>
+    </header>
+    @if (error()) { <p class="error-message" role="alert">{{ error() }}</p> }
+    <div class="preview-workspace">
+      <aside class="template-rail">
+        <h3>Szablony</h3>
+        @for (template of templates; track template.id) {
+          <button type="button" class="template-option" [class.selected]="selected() === template.id" (click)="choose(template.id)">
+            <span class="thumbnail"><app-resume-document-preview [resume]="resume()" [template]="template.id" [compact]="true" /></span>
+            <span class="template-meta"><strong>{{ template.name }}</strong><small>{{ template.description }}</small></span>
+            <span class="selection-mark" aria-hidden="true">{{ selected() === template.id ? '✓' : '' }}</span>
+          </button>
+        }
+      </aside>
+      <main class="large-preview" aria-label="Podgląd wybranego szablonu">
+        <app-resume-document-preview [resume]="resume()" [template]="selected()" />
+      </main>
+    </div>
+  </section>
+</div>
