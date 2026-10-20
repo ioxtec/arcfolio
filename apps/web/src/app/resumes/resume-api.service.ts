@@ -25,6 +25,8 @@ export type ResumeDetails = {
   title: string;
   templateId: string;
   updatedAt: string;
+  language: string;
+  personalData: Record<string, unknown>;
   localizations: ResumeLocalization[];
   _count: { revisions: number };
 };
@@ -50,6 +52,23 @@ export class ResumeApiService {
 
   create(input: { title: string; locale: string; roleTitle?: string }) {
     return this.http.post<ResumeDetails>('/api/resumes', input, { withCredentials: true });
+  }
+
+  update(
+    id: string,
+    input: {
+      title?: string;
+      locale: string;
+      roleTitle?: string;
+      summary?: string;
+      consentText?: string;
+      personalData?: Record<string, unknown>;
+      content?: Record<string, unknown>;
+    },
+  ) {
+    return this.http.patch<{ resume: ResumeDetails }>(`/api/resumes/${id}`, input, {
+      withCredentials: true,
+    });
   }
 
   getOne(id: string) {

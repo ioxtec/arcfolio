@@ -38,6 +38,7 @@ import { ThemeService } from './theme.service';
       transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
     }
     button:hover { border-color: var(--accent, #3157dc); transform: translateY(-1px); }
+    :host-context([data-theme='dark']) button { background: transparent; }
     svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
   `,
 })

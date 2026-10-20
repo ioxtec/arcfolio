@@ -81,4 +81,38 @@ describe('ResumesService', () => {
     expect(result.revision.name).toBe('CV dla Acme');
     expect(transaction.resumeRevision.create).toHaveBeenCalledOnce();
   });
+
+  it('updates the current draft and its selected localization', async () => {
+    const update = vi.fn().mockResolvedValue(resume);
+    const prisma = {
+      resume: {
+        findFirst: vi.fn().mockResolvedValue(resume),
+        update,
+      },
+    } as unknown as PrismaService;
+    const service = new ResumesService(prisma, new ResumePolicyService());
+
+    await service.update(resume.userId, resume.id, {
+      locale: 'pl-PL',
+      roleTitle: 'Lead Frontend Developer',
+      summary: '<b>Tworzę dostępne aplikacje.</b>',
+      personalData: { firstName: 'Anna', city: 'Warszawa' },
+      content: { experience: '<ul><li>Arcfolio</li></ul>' },
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: resume.id },
+        data: expect.objectContaining({
+          language: 'pl-PL',
+          personalData: { firstName: 'Anna', city: 'Warszawa' },
+          localizations: {
+            upsert: expect.objectContaining({
+              where: { resumeId_locale: { resumeId: resume.id, locale: 'pl-PL' } },
+            }),
+          },
+        }),
+      }),
+    );
+  });
 });

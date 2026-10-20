@@ -7,6 +7,7 @@ import { PrismaService } from '../database/prisma.service.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { CreateResumeRevisionDto } from './dto/create-resume-revision.dto.js';
 import type { CreateResumeDto } from './dto/create-resume.dto.js';
+import type { UpdateResumeDto } from './dto/update-resume.dto.js';
 import { ResumePolicyService } from './resume-policy.service.js';
 
 const DEFAULT_SECTION_LABELS: Record<string, Record<string, string>> = {
@@ -156,6 +157,51 @@ export class ResumesService {
       resume,
       limits: { versions: this.policy.maxVersions },
     };
+  }
+
+  async update(userId: string, id: string, input: UpdateResumeDto) {
+    await this.assertOwnedResume(userId, id);
+
+    const resume = await this.prisma.resume.update({
+      where: { id },
+      data: {
+        ...(input.title !== undefined ? { title: input.title.trim() } : {}),
+        language: input.locale,
+        ...(input.personalData !== undefined
+          ? { personalData: input.personalData as Prisma.InputJsonValue }
+          : {}),
+        localizations: {
+          upsert: {
+            where: { resumeId_locale: { resumeId: id, locale: input.locale } },
+            update: {
+              ...(input.roleTitle !== undefined
+                ? { roleTitle: input.roleTitle.trim() || null }
+                : {}),
+              ...(input.summary !== undefined ? { summary: input.summary || null } : {}),
+              ...(input.consentText !== undefined
+                ? { consentText: input.consentText || null }
+                : {}),
+              ...(input.content !== undefined
+                ? { content: input.content as Prisma.InputJsonValue }
+                : {}),
+            },
+            create: {
+              locale: input.locale,
+              roleTitle: input.roleTitle?.trim() || null,
+              summary: input.summary || null,
+              consentText: input.consentText || null,
+              content: (input.content ?? {}) as Prisma.InputJsonValue,
+              sectionLabels:
+                DEFAULT_SECTION_LABELS[input.locale] ??
+                DEFAULT_SECTION_LABELS['en-GB'],
+            },
+          },
+        },
+      },
+      include: { localizations: true, _count: { select: { revisions: true } } },
+    });
+
+    return { resume };
   }
 
   async listRevisions(userId: string, resumeId: string) {

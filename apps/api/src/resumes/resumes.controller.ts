@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/auth.guards.js';
 import type { PublicUser } from '../auth/auth.types.js';
 import { CreateResumeRevisionDto } from './dto/create-resume-revision.dto.js';
 import { CreateResumeDto } from './dto/create-resume.dto.js';
+import { UpdateResumeDto } from './dto/update-resume.dto.js';
 import { ResumesService } from './resumes.service.js';
 
 type AuthenticatedRequest = Request & { user: PublicUser };
@@ -29,6 +30,15 @@ export class ResumesController {
   @Get(':id')
   getOne(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.resumesService.getOne(request.user.id, id);
+  }
+
+  @Patch(':id')
+  update(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() input: UpdateResumeDto,
+  ) {
+    return this.resumesService.update(request.user.id, id, input);
   }
 
   @Get(':id/revisions')
