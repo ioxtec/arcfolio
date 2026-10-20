@@ -34,10 +34,13 @@ h1 { margin: 0; color: var(--ink); font-size: clamp(2.2rem, 3.6vw, 3.05rem); lin
   .history-header .primary-button svg { width: 21px; height: 21px; }
   .state-item { margin-left: 0; }
   .document-state b { display: none; }
-  .version-summary { grid-template-columns: 22px auto minmax(0, 1fr) 32px; }
+  .version-summary { min-height: 74px; grid-template-columns: 22px minmax(0, 1fr) 32px; grid-template-rows: auto auto; column-gap: 10px; row-gap: 7px; align-content: center; padding: 12px; box-sizing: border-box; }
+  .version-summary > svg { grid-column: 1; grid-row: 1; align-self: center; }
   .version-summary > svg, .date svg { flex: 0 0 auto; }
+  .version-summary strong { grid-column: 2; grid-row: 1; align-self: center; line-height: 1.35; }
   .version-name, .preview-action { display: none; }
-  .date { grid-column: 2 / 4; margin-bottom: 10px; }
+  .date { grid-column: 2; grid-row: 2; margin: 0; line-height: 1.35; }
+  .chevron { grid-column: 3; grid-row: 1 / 3; align-self: center; }
   .version-detail { grid-template-columns: 1fr; padding: 18px; }
   .version-detail .primary-button { width: 100%; }
   .history-usage { grid-template-columns: 1fr; gap: 10px; }
