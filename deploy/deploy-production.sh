@@ -27,16 +27,24 @@ docker compose -f "${compose_file}" pull
 docker compose -f "${compose_file}" run --rm api npm run prisma:migrate:deploy
 docker compose -f "${compose_file}" up -d --remove-orphans
 
-attempt=0
-until wget -qO- https://arcfolio.ryzko.pl/api/health | grep -q '"status":"ok"'; do
-  attempt=$((attempt + 1))
-  if [ "${attempt}" -ge 12 ]; then
-    echo "Deployment health check failed" >&2
-    docker compose -f "${compose_file}" ps
-    exit 1
-  fi
-  sleep 5
-done
+wait_for_healthy() {
+  container="$1"
+  attempt=0
+  while [ "${attempt}" -lt 18 ]; do
+    status="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "${container}" 2>/dev/null || true)"
+    if [ "${status}" = "healthy" ] || [ "${status}" = "running" ]; then
+      return 0
+    fi
+    attempt=$((attempt + 1))
+    sleep 5
+  done
+  echo "Container ${container} did not become healthy" >&2
+  docker compose -f "${compose_file}" ps
+  return 1
+}
+
+wait_for_healthy arcfolio-api
+wait_for_healthy arcfolio-web
 
 docker image prune -f >/dev/null
 echo "Deployment healthy: https://arcfolio.ryzko.pl"

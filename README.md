@@ -70,3 +70,18 @@ For production Google sign-in, add this authorized redirect URI to the OAuth cli
 ```text
 https://arcfolio.ryzko.pl/api/auth/google/callback
 ```
+
+## Development deployment
+
+The `develop` branch deploys independently to `/opt/arcfolio-dev` on Mikrus. It uses:
+
+- containers `arcfolio-dev-web` and `arcfolio-dev-api`;
+- Docker network `arcfolio_dev_backend`;
+- PostgreSQL database and role `arcfolio_dev`;
+- planned host `https://dev.arcfolio.ryzko.pl`.
+
+Configure a GitHub environment named `development` with the same four Mikrus SSH secrets used by production. The development workflow builds immutable GHCR images, backs up the development database, applies migrations and waits for both containers to become healthy.
+
+Public hosts should remain protected at the Caddy layer with password authentication and an `X-Robots-Tag: noindex, nofollow, noarchive` header until the application is ready for public access. Password hashes and plaintext recovery credentials must stay outside the repository.
+
+`deploy/configure-private-access.py` owns only the marked Arcfolio section in the live Caddyfile. It validates the generated configuration and restores the preceding file if validation fails. The script reads the bcrypt hash from `/opt/caddy/arcfolio-basic-auth.hash`; the plaintext password must only exist in the private local recovery vault.
