@@ -44,3 +44,29 @@ http://localhost:3000/api/auth/google/callback
 ## Renaming the product
 
 Change `productName` in `apps/web/src/app/core/config/brand.config.ts`. Technical identifiers intentionally do not contain the product name.
+
+## Production deployment
+
+Production runs as two containers behind Caddy:
+
+- `arcfolio-web` serves the Angular application and proxies `/api` to NestJS.
+- `arcfolio-api` connects to PostgreSQL through the private `arcfolio_backend` Docker network.
+
+The server keeps application secrets in `/opt/arcfolio/app.env`. They are not stored in Git or GitHub Actions. Database backups are created before every migration and retained for 14 days by default.
+
+The `Deploy production` GitHub Actions workflow builds immutable images in GHCR and deploys only from `main` (or through an explicit manual run). Configure the protected `production` environment with these secrets:
+
+- `MIKRUS_HOST`
+- `MIKRUS_PORT`
+- `MIKRUS_USER`
+- `MIKRUS_SSH_KEY`
+
+The public health endpoint is `https://arcfolio.ryzko.pl/api/health`.
+
+The Cloudflare DNS record for `arcfolio` must use the Mikrus server's dedicated IPv6 address (`AAAA`, proxied). The shared IPv4 address does not route ports 80/443 directly to this VPS.
+
+For production Google sign-in, add this authorized redirect URI to the OAuth client and then fill `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `/opt/arcfolio/app.env`:
+
+```text
+https://arcfolio.ryzko.pl/api/auth/google/callback
+```

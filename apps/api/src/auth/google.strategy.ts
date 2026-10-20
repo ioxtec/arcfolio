@@ -9,9 +9,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const apiUrl = process.env.API_PUBLIC_URL ?? 'http://localhost:3000/api';
     super({
       clientID:
-        process.env.GOOGLE_CLIENT_ID ?? 'google-client-id-not-configured',
+        process.env.GOOGLE_CLIENT_ID || 'google-client-id-not-configured',
       clientSecret:
-        process.env.GOOGLE_CLIENT_SECRET ??
+        process.env.GOOGLE_CLIENT_SECRET ||
         'google-client-secret-not-configured',
       callbackURL: `${apiUrl}/auth/google/callback`,
       scope: ['email', 'profile'],
