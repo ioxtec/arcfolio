@@ -2,10 +2,22 @@ node_modules/
 dist/
 .angular/
 coverage/
+tmp/
+out-tsc/
+bazel-out/
 *.tsbuildinfo
-.DS_Store
+*.log
+
 .env
 .env.*
-!.env.example
+
+.idea/
+.vscode/
+.history/
+
+.DS_Store
+Thumbs.db
+
 apps/api/src/generated/prisma/
+apps/api/prisma/src/generated/prisma/
 
