@@ -10,7 +10,6 @@ coverage
 **/coverage
 .env
 .env.*
-!.env.example
-design-qa.md
+*.md
 *.log
 .DS_Store
